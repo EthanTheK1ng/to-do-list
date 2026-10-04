@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <meta name="theme-color" content="#171426">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="To-Do">
+
+    <title>To-Do List</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/todo-192.png">
+    <link rel="apple-touch-icon" href="icons/todo-192.png">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div id="app-loading-screen" class="loading-screen">
+        <div class="loading-orbit">
+            <span></span>
+            <span></span>
+        </div>
+
+        <p>Loading your list…</p>
+    </div>
+
+
+    <main class="app-shell">
+
+        <!-- HEADER -->
+        <header class="hero">
+
+            <div class="hero-glow hero-glow-one"></div>
+            <div class="hero-glow hero-glow-two"></div>
+
+            <h1 id="greeting-text">
+                Hey, Ethan.
+            </h1>
+
+            <div class="hero-footer">
+                <p id="current-date">
+                    Saturday, October 3
+                </p>
+
+                <p id="total-summary">
+                    0 things on your list
+                </p>
+            </div>
+
+        </header>
+
+
+        <!-- SHORT TERM -->
+        <section
+            class="list-section short-section"
+            aria-labelledby="short-title"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <p
+                        id="short-term-kicker"
+                        class="section-kicker"
+                    >
+                        Right now
+                    </p>
+
+                    <h2 id="short-title">
+                        Short Term
+                    </h2>
+                </div>
+
+                <span
+                    id="short-count"
+                    class="count-badge"
+                >
+                    0
+                </span>
+
+            </div>
+
+
+            <div
+                id="short-list"
+                class="task-list"
+                data-term="short"
+            ></div>
+
+
+            <div
+                id="short-empty"
+                class="empty-state"
+            >
+                <div class="empty-icon">
+                    ✓
+                </div>
+
+                <p>
+                    Nothing short term right now.
+                </p>
+
+                <span>
+                    Add something with the + button.
+                </span>
+            </div>
+
+        </section>
+
+
+        <!-- LONG TERM -->
+        <section
+            class="list-section long-section"
+            aria-labelledby="long-title"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <p
+                        id="long-term-kicker"
+                        class="section-kicker"
+                    >
+                        For the future
+                    </p>
+
+                    <h2 id="long-title">
+                        Long Term
+                    </h2>
+                </div>
+
+                <span
+                    id="long-count"
+                    class="count-badge"
+                >
+                    0
+                </span>
+
+            </div>
+
+
+            <div
+                id="long-list"
+                class="task-list"
+                data-term="long"
+            ></div>
+
+
+            <div
+                id="long-empty"
+                class="empty-state"
+            >
+                <div class="empty-icon">
+                    ↗
+                </div>
+
+                <p>
+                    No long-term items yet.
+                </p>
+
+                <span>
+                    Drop future goals here.
+                </span>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ADD BUTTON -->
+    <button
+        id="new-entry-button"
+        class="fab"
+        type="button"
+        aria-label="Add a new item"
+    >
+        <span>+</span>
+    </button>
+
+
+    <!-- ADD / EDIT DIALOG -->
+    <dialog
+        id="entry-dialog"
+        class="sheet-dialog"
+    >
+
+        <form
+            id="entry-form"
+            class="sheet-card"
+        >
+
+            <div class="sheet-handle"></div>
+
+
+            <div class="dialog-header">
+
+                <div>
+                    <p
+                        id="entry-dialog-kicker"
+                        class="dialog-kicker"
+                    >
+                        NEW ITEM
+                    </p>
+
+                    <h2 id="entry-dialog-title">
+                        Add to your list
+                    </h2>
+                </div>
+
+
+                <button
+                    id="close-entry-button"
+                    class="icon-button"
+                    type="button"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <label
+                class="field-label"
+                for="entry-name"
+            >
+                Name
+            </label>
+
+            <input
+                id="entry-name"
+                class="text-input"
+                type="text"
+                maxlength="240"
+                placeholder="What do you need to do?"
+                autocomplete="off"
+                required
+            >
+
+
+            <!-- COLOR -->
+            <div class="field-block">
+
+                <p class="field-label">
+                    Color
+                </p>
+
+                <input
+                    id="entry-color"
+                    type="hidden"
+                    value="#7c5cff"
+                >
+
+                <div
+                    id="color-options"
+                    class="color-options"
+                >
+
+                    <button
+                        type="button"
+                        class="color-swatch selected"
+                        data-color="#7c5cff"
+                        style="--swatch:#7c5cff"
+                        aria-label="Purple"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#3b82f6"
+                        style="--swatch:#3b82f6"
+                        aria-label="Blue"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#06b6d4"
+                        style="--swatch:#06b6d4"
+                        aria-label="Cyan"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#22c55e"
+                        style="--swatch:#22c55e"
+                        aria-label="Green"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#f59e0b"
+                        style="--swatch:#f59e0b"
+                        aria-label="Amber"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#f97316"
+                        style="--swatch:#f97316"
+                        aria-label="Orange"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#ef476f"
+                        style="--swatch:#ef476f"
+                        aria-label="Pink"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#64748b"
+                        style="--swatch:#64748b"
+                        aria-label="Slate"
+                    ></button>
+
+                </div>
+            </div>
+
+
+            <!-- TERM -->
+            <div class="field-block">
+
+                <p class="field-label">
+                    Time horizon
+                </p>
+
+                <input
+                    id="entry-term"
+                    type="hidden"
+                    value="short"
+                >
+
+                <div
+                    id="term-options"
+                    class="term-options"
+                >
+
+                    <button
+                        class="term-choice selected"
+                        data-term="short"
+                        type="button"
+                    >
+                        <span class="choice-icon">
+                            ⚡
+                        </span>
+
+                        <span>
+                            <strong>
+                                Short Term
+                            </strong>
+
+                            <small>
+                                Things to handle soon
+                            </small>
+                        </span>
+                    </button>
+
+
+                    <button
+                        class="term-choice"
+                        data-term="long"
+                        type="button"
+                    >
+                        <span class="choice-icon">
+                            ◌
+                        </span>
+
+                        <span>
+                            <strong>
+                                Long Term
+                            </strong>
+
+                            <small>
+                                Goals and future tasks
+                            </small>
+                        </span>
+                    </button>
+
+                </div>
+            </div>
+
+
+            <div class="dialog-actions">
+
+                <button
+                    id="delete-entry-button"
+                    class="delete-button"
+                    type="button"
+                    hidden
+                >
+                    Delete
+                </button>
+
+                <button
+                    id="save-entry-button"
+                    class="save-button"
+                    type="submit"
+                >
+                    <span class="button-spinner"></span>
+
+                    <span id="save-entry-text">
+                        Add Item
+                    </span>
+                </button>
+
+            </div>
+
+        </form>
+    </dialog>
+
+
+    <!-- INFO DIALOG -->
+    <dialog
+        id="info-dialog"
+        class="sheet-dialog"
+    >
+
+        <div class="sheet-card info-card">
+
+            <div class="sheet-handle"></div>
+
+            <div class="dialog-header">
+
+                <div>
+                    <p class="dialog-kicker">
+                        ITEM INFO
+                    </p>
+
+                    <h2 id="info-name">
+                        Item
+                    </h2>
+                </div>
+
+
+                <button
+                    id="close-info-button"
+                    class="icon-button"
+                    type="button"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Created
+                    </span>
+
+                    <strong id="info-created">
+                        —
+                    </strong>
+                </div>
+
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Last updated
+                    </span>
+
+                    <strong id="info-updated">
+                        —
+                    </strong>
+                </div>
+
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Section
+                    </span>
+
+                    <strong id="info-term">
+                        —
+                    </strong>
+                </div>
+
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Color
+                    </span>
+
+                    <span class="info-color-wrap">
+                        <span
+                            id="info-color-dot"
+                            class="info-color-dot"
+                        ></span>
+
+                        <strong id="info-color">
+                            —
+                        </strong>
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+    </dialog>
+
+
+    <!-- TOAST -->
+    <div
+        id="toast"
+        class="toast"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+</body>
+
+</html>
